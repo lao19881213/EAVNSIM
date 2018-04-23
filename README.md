@@ -9,3 +9,5 @@ I am trying to develop an integrated VLBI simulator for East Asia VLBI Network (
 － [Issue Tag](https://github.com/ZhenZHAO/EAVNSIM/issues) lists all problems and maintains a technical blog
 
 I am fresh new to radio astronomical area. All i want is to contribute a little to the community.
+
+Copyright &copy; Shanghai Astronomical Observatory
