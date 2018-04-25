@@ -169,9 +169,9 @@ def itrf_2_horizontal(satellite_lst, long_sta, lat_sta, height_sta):
     """
     从地面坐标到水平系统的转换
     :param satellite_lst: 依次存放的是数据是卫星位置和速度：x y z vx vy vz
-    :param long_sta:  站的经度
-    :param lat_sta:   站的维度
-    :param height_sta:  站的高度
+    :param long_sta:  遥测站的经度
+    :param lat_sta:   遥测站的维度
+    :param height_sta:  遥测站的高度
     :return:
     """
 

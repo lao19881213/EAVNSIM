@@ -123,16 +123,16 @@ def kepler_2_cartesian(a, e, i, aop, loan, m):
     return x, y, z, Vx, Vy, Vz
 
 
-def get_satellite_position(a, e, i, AOP, LOAN, M0, MJDEpoch, MJDTime, precessionmode):
+def get_satellite_position(a, e, i, AOP, LOAN, M0, MJDEpoch, MJDTime, precession_mode):
     delta_T = (MJDTime - MJDEpoch) * 86400  # 时间差,单位时间转化为s 一天=86400s
     n = np.sqrt(lc.GM / (a ** 3))  # [rad/s]
     r0 = 6378.1363  # 地球赤道半径，单位为千米EarthRad=6378.1363
     J2 = 0.001082629832258  # 动力形状
-    if precessionmode['flag'] == 0:
+    if precession_mode['flag'] == 0:
         dAOP_dt = 0
         dLOAN_dt = 0
         dM0_dt = 0
-    elif precessionmode['flag'] == 1:
+    elif precession_mode['flag'] == 1:
         dAOP_dt = 0.75 * J2 * n * ((r0 / a) ** 2) * ((5 * ((np.cos(i)) ** 2) - 1) / ((1 - e ** 2) ** 2))
         dLOAN_dt = -1.5 * J2 * n * ((r0 / a) ** 2) * (np.cos(i) / (1 - e ** 2) ** 2)
         dM0_dt = 0.75 * J2 * n * ((r0 / a) ** 2) * (3 * np.cos(i) ** 2 - 1) / np.sqrt((1 - e ** 2) ** 3)

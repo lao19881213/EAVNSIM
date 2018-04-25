@@ -253,7 +253,7 @@ def earth_ecliptic_pos(pos_vec_sat, epsilon):
     return earth_ecliptic                         # part4-1 P16
 
 
-def sun_effect(time_mjd, ra_src, dec_src):
+def sun_effect_src(time_mjd, ra_src, dec_src):
     """
     太阳是否遮挡源的观测
     :param time_mjd: 时间
