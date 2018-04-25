@@ -277,11 +277,10 @@ def icrf_2_itrf(time_mjd, icrf_sat_x, icrf_sat_y, icrf_sat_z, icrf_sat_vx,
     icrf_veliocity_mat = np.array([[icrf_sat_vx], [icrf_sat_vy], [icrf_sat_vz]])
     temp_mat_1 = np.dot(rz_gast, icrf_veliocity_mat)
     temp_mat_2 = np.array([[k * (-np.sin(gast)), k * np.cos(gast), 0],
-                            [-k * np.cos(gast), k * (-np.sin(gast)), 0],
-                            [0, 0, 0]
-                            ])
+                           [-k * np.cos(gast), k * (-np.sin(gast)), 0],
+                           [0, 0, 0]
+                           ])
     temp_mat_3 = np.dot(temp_mat_2, icrf_pos_vec)
     itrf_velocity_mat = temp_mat_1 + temp_mat_3
     return [itrf_pos_vec[0][0], itrf_pos_vec[1][0], itrf_pos_vec[2][0],
             itrf_velocity_mat[0][0], itrf_velocity_mat[1][0], itrf_velocity_mat[2][0]]
-
