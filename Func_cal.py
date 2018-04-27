@@ -419,6 +419,7 @@ def reset_all():
     tmFovOutWin.config(bg='lightblue')
     fitsCapOutWin.config(bg='lightblue')
 
+
 btn_reset = tk.Button(frm_run, text='RESET', width=10, height=2, command=reset_all)
 btn_reset.pack(side='left',padx=30)
 
