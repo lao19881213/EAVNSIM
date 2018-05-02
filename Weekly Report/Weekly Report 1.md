@@ -13,7 +13,6 @@ Have mainly been working on the simulator development
 - [x] read the **Doc** of SPAS, to summary more about the constraints (`still under working`)
 - [x] design the project structure (detail avaible at [github_wiki_design](https://github.com/ZhenZHAO/EAVNSIM/wiki/Roughly-Design))
 - [x] re-coding subfucntions into the following two series of functions
-      
       - transformation related
         - [trans_unit.py](https://github.com/ZhenZHAO/EAVNSIM/blob/master/trans_unit.py)
         - [trans_time.py](https://github.com/ZhenZHAO/EAVNSIM/blob/master/trans_time.py)
