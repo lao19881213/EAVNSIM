@@ -13,15 +13,16 @@ Have mainly been working on the simulator development
 - [x] read the **Doc** of SPAS, to summary more about the constraints (`still under working`)
 - [x] design the project structure (detail avaible at [github_wiki_design](https://github.com/ZhenZHAO/EAVNSIM/wiki/Roughly-Design))
 - [x] re-coding subfucntions into the following two series of functions
+      
       - transformation related
-        - [trans_unit.py](https://github.com/ZhenZHAO/EAVNSIM/blob/master/trans_unit.py)
-        - [trans_time.py](https://github.com/ZhenZHAO/EAVNSIM/blob/master/trans_time.py)
-        - [trans_coordinate.py](https://github.com/ZhenZHAO/EAVNSIM/blob/master/trans_coordinate.py)
+        - trans_unit.py
+        - trans_time.py
+        - trans_coordinate.py
       
       - various model formulation
-        - [model_satellite.py](https://github.com/ZhenZHAO/EAVNSIM/blob/master/model_satellite.py)
-        - [model_effect.py](https://github.com/ZhenZHAO/EAVNSIM/blob/master/model_effect.py)
-        - [model_obs_ability.py](https://github.com/ZhenZHAO/EAVNSIM/blob/master/model_obs_ability.py)
+        - model_satellite.py
+        - model_effect.py)
+        - model_obs_ability.py
 
 PS: Things are always harder than it looks at first...
 
