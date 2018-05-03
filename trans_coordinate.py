@@ -113,7 +113,7 @@ def polar_2_rect(long, lat):
 
 def equatorial_2_horizontal(time_mjd, ra_src, dec_src, long_station, lat_station):
     x, y, z = polar_2_rect(ra_src, dec_src)
-    gast = tt.time_2_mjd(time_mjd)
+    gast = tt.mjd_2_gast(time_mjd)
     rz_pi = np.array([[np.cos(np.pi), np.sin(np.pi), 0],
                       [-np.sin(np.pi), np.cos(np.pi), 0],
                       [0, 0, 1]
