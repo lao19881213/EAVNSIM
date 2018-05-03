@@ -37,18 +37,18 @@ def obs_all_active_sta(time_mjd, ra_src, dec_src, pos_mat_sat, pos_mat_telemetry
             # 1. 首先生成观测站在0-360度方向上的cutoff角度设置
             vlbi_loc_horiz = []
             if cutoff_mode['flag'] == 0:
-                for k in np.arange(0, 360):
+                for _ in np.arange(0, 360):
                     vlbi_loc_horiz.append(pos_mat_vlbi[j][4])
             elif cutoff_mode['flag'] == 1:
-                for k in np.arange(0, 360):
+                for _ in np.arange(0, 360):
                     vlbi_loc_horiz.append(cutoff_mode['CutAngle'])
             elif cutoff_mode['flag'] == 2:
                 angle = np.max([pos_mat_vlbi[j][4], cutoff_mode['CutAngle']])
-                for k in np.arange(0, 360):
+                for _ in np.arange(0, 360):
                     vlbi_loc_horiz.append(angle)
             elif cutoff_mode['flag'] == 3:
                 angle = np.min([pos_mat_vlbi[j][4], cutoff_mode['CutAngle']])
-                for k in np.arange(0, 360):
+                for _ in np.arange(0, 360):
                     vlbi_loc_horiz.append(angle)
             # 2. 获得该站的可观测性结果并记录
             visibility = obs_judge_active_vlbi_station(ra_src, dec_src, time_mjd, long_vlbi, lat_vlbi, vlbi_loc_horiz)
@@ -112,18 +112,18 @@ def obs_judge_active_satellite(time_mjd, pos_vec_sat, pos_vec_telemetry, ra_src,
         # 1. 首先生成遥测站在0-360度方向上的cutoff角度设置
         tele_loc_horiz = []
         if cutoff_dict['flag'] == 0:  # mod 1, 根据数据库中遥测站的信息设置cutoff，第5列
-            for k in np.arange(0, 360):
+            for _ in np.arange(0, 360):
                 tele_loc_horiz.append(pos_vec_telemetry[i][4])
         elif cutoff_dict['flag'] == 1:  # mod 2, 根据界面上直接设置遥测站的cutoff
-            for k in np.arange(0, 360):
+            for _ in np.arange(0, 360):
                 tele_loc_horiz.append(cutoff_dict['CutAngle'])
         elif cutoff_dict['flag'] == 2:  # mod 3 ＝ mod 1 and mod 2
             angle = np.max([pos_vec_telemetry[i][4], cutoff_dict['CutAngle']])
-            for k in np.arange(0, 360):
+            for _ in np.arange(0, 360):
                 tele_loc_horiz.append(angle)
         elif cutoff_dict['flag'] == 3:  # mod 3 ＝ mod 1 or mod 2
             angle = np.min([pos_vec_telemetry[i][4], cutoff_dict['CutAngle']])
-            for k in np.arange(0, 360):
+            for _ in np.arange(0, 360):
                 tele_loc_horiz.append(angle)
         # 2. 调用自函数去获得遥测站的可见性
         long_telemetry, lat_telemetry, height_telemetry = tc.itrf_2_geographic(pos_vec_telemetry[0][1],
