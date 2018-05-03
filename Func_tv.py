@@ -11,7 +11,7 @@ import model_effect as me
 import model_satellite as ms
 import model_obs_ability as mo
 import numpy as np
-import matplotlib as mpl
+import matplotlib.pyplot as plt
 
 
 def func_tv_az_el(start_time_mjd, stop_time_mjd, time_step, pos_src, pos_mat_vlbi):
@@ -46,6 +46,42 @@ def func_tv_az_el(start_time_mjd, stop_time_mjd, time_step, pos_src, pos_mat_vlb
         lst_hour.append(lst_hour_1)
     return lst_az, lst_el, lst_hour
 
+def test_ae_el():
+    # load data from configurations
+    start_time = tt.time_2_mjd(lc.StartTimeGlobalYear, lc.StartTimeGlobalMonth,
+                                 lc.StartTimeGlobalDay, lc.StartTimeGlobalHour,
+                                 lc.StartTimeGlobalMinute, lc.StartTimeGlobalSecond, 0)
+    stop_time = tt.time_2_mjd(lc.StopTimeGlobalYear, lc.StopTimeGlobalMonth,
+                                lc.StopTimeGlobalDay, lc.StopTimeGlobalHour,
+                                lc.StopTimeGlobalMinute, lc.StopTimeGlobalSecond, 0)
+    time_step = tt.time_2_day(lc.TimeStepGlobalDay, lc.TimeStepGlobalHour, lc.TimeStepGlobalMinute,
+                             lc.TimeStepGlobalSecond)
+    # invoke the AZ-EL calculation functions
+    azimuth, elevation, hour_lst = func_tv_az_el(start_time, stop_time, time_step, lc.SouGllst[0], lc.VLBGllst)
+
+    # plot it
+    for i in np.arange(0, len(azimuth)):
+        az1 = azimuth[i]
+        h1 = hour_lst[i]
+        plt.subplot(2, 1, 1)
+        plt.plot(h1, az1)
+        plt.xlabel("Time(h)")
+        plt.ylabel("Azimuth($^\circ$)")
+        plt.title("The azimuth of source in VLBI stations")
+        # plt.title_MPL(1, "The azimuth of source in VLBI stations")
+
+    for j in np.arange(0, len(elevation)):
+        el1 = elevation[j]
+        h1 = hour_lst[j]
+
+        plt.subplot(2, 1, 2)
+        plt.plot(h1, el1)
+        plt.xlabel("Time(h)")
+        plt.ylabel("Elevation($^\circ$)")
+        plt.title("The elevation of source in VLBI stations")
+    plt.show()
+
 
 if __name__ == "__main__":
-    print("hello world!")
+    # test az-el
+    test_ae_el()
