@@ -46,16 +46,17 @@ def func_tv_az_el(start_time_mjd, stop_time_mjd, time_step, pos_src, pos_mat_vlb
         lst_hour.append(lst_hour_1)
     return lst_az, lst_el, lst_hour
 
+
 def test_ae_el():
     # load data from configurations
     start_time = tt.time_2_mjd(lc.StartTimeGlobalYear, lc.StartTimeGlobalMonth,
-                                 lc.StartTimeGlobalDay, lc.StartTimeGlobalHour,
-                                 lc.StartTimeGlobalMinute, lc.StartTimeGlobalSecond, 0)
+                               lc.StartTimeGlobalDay, lc.StartTimeGlobalHour,
+                               lc.StartTimeGlobalMinute, lc.StartTimeGlobalSecond, 0)
     stop_time = tt.time_2_mjd(lc.StopTimeGlobalYear, lc.StopTimeGlobalMonth,
-                                lc.StopTimeGlobalDay, lc.StopTimeGlobalHour,
-                                lc.StopTimeGlobalMinute, lc.StopTimeGlobalSecond, 0)
+                              lc.StopTimeGlobalDay, lc.StopTimeGlobalHour,
+                              lc.StopTimeGlobalMinute, lc.StopTimeGlobalSecond, 0)
     time_step = tt.time_2_day(lc.TimeStepGlobalDay, lc.TimeStepGlobalHour, lc.TimeStepGlobalMinute,
-                             lc.TimeStepGlobalSecond)
+                              lc.TimeStepGlobalSecond)
     # invoke the AZ-EL calculation functions
     azimuth, elevation, hour_lst = func_tv_az_el(start_time, stop_time, time_step, lc.SouGllst[0], lc.VLBGllst)
 
