@@ -92,6 +92,76 @@ def obs_all_active_sta(time_mjd, ra_src, dec_src, pos_mat_sat, pos_mat_telemetry
         return vlbi_visibility_result, satellite_visibility_result, pos_mat_sat
 
 
+def obs_all_active_sat(time_mjd, ra_src, dec_src, pos_mat_sat, pos_mat_telemetry,
+                       baseline_type, cutoff_mode, precession_mode):
+    # 卫星的可观测性
+    satellite_visibility_result = []
+    for i in np.arange(len(pos_mat_sat)):
+        satellite_visibility_result.extend([pos_mat_sat[i][0], True])
+    sat_lst = []  # 存放卫星名称和ITRF坐标
+    sat_itrf = []
+    if (baseline_type & 6) != 0:  # if 'GroundToSpace' or 'SpaceToSpace'
+        # 计算得卫星的ICRF坐标
+        for j in np.arange(len(pos_mat_sat)):  # 卫星的输入参数 :卫星轨道椭圆半长轴a,偏心率e,
+            # i为轨道平面倾角,(AOP)omega为近地点角,Omega(LOAN)为升交点赤经,M为平近点角
+            satellite_a = pos_mat_sat[j][1]
+            satellite_e = pos_mat_sat[j][2]
+            satellite_i = pos_mat_sat[j][3] * np.pi / 180
+            satellite_aop = pos_mat_sat[j][4] * np.pi / 180
+            satellite_loan = pos_mat_sat[j][5] * np.pi / 180
+            satellite_m = pos_mat_sat[j][6] * np.pi / 180
+            satellite_epoch = pos_mat_sat[j][7]
+            temp_lst = ms.get_satellite_position(satellite_a, satellite_e, satellite_i,
+                                                 satellite_aop, satellite_loan, satellite_m,
+                                                 satellite_epoch, time_mjd, precession_mode)
+            sat_lst.append(temp_lst)  # 卫星在MJD时刻的位置，和速度
+        # ICRF->ITRF
+        for j in np.arange(len(sat_lst)):
+            temp_lst = tc.icrf_2_itrf(time_mjd, sat_lst[j][6], sat_lst[j][7], sat_lst[j][8], sat_lst[j][9],
+                                      sat_lst[j][10], sat_lst[j][11])  # 输入一个卫星的位置和速度信息
+            sat_lst1 = [pos_mat_sat[j][0]]
+            sat_lst1.extend(temp_lst)
+            sat_itrf.append(sat_lst1)
+            # 获取卫星的可见度
+            visible = obs_judge_active_satellite(time_mjd, sat_lst1, pos_mat_telemetry, ra_src, dec_src, cutoff_mode)
+            satellite_visibility_result[2 * j + 1] = visible  # visible
+
+    if (baseline_type & 6) != 0:  # 如果跟卫星相关，返回卫星的itrf坐标
+        return satellite_visibility_result, sat_itrf
+    else:  # 如果跟卫星无关，其实应该直接返回 vlbi_visibility_result 即可
+        return satellite_visibility_result, pos_mat_sat
+
+
+def obs_all_active_vlbi(time_mjd, ra_src, dec_src, pos_mat_vlbi, cutoff_mode):
+    vlbi_visibility_result = []  # VLBI站可观测性
+    for i in np.arange(len(pos_mat_vlbi)):
+        vlbi_visibility_result.extend([pos_mat_vlbi[i][0], True])
+    # if (baseline_type & 3) != 0:  # GroundToGround, GroundToSpace
+    for j in np.arange(len(pos_mat_vlbi)):
+        long_vlbi, lat_vlbi, height_vlbi = tc.itrf_2_geographic(pos_mat_vlbi[j][1],
+                                                                pos_mat_vlbi[j][2], pos_mat_vlbi[j][3])
+        # 1. 首先生成观测站在0-360度方向上的cutoff角度设置
+        vlbi_loc_horiz = []
+        if cutoff_mode['flag'] == 0:
+            for _ in np.arange(0, 360):
+                vlbi_loc_horiz.append(pos_mat_vlbi[j][4])
+        elif cutoff_mode['flag'] == 1:
+            for _ in np.arange(0, 360):
+                vlbi_loc_horiz.append(cutoff_mode['CutAngle'])
+        elif cutoff_mode['flag'] == 2:
+            angle = np.max([pos_mat_vlbi[j][4], cutoff_mode['CutAngle']])
+            for _ in np.arange(0, 360):
+                vlbi_loc_horiz.append(angle)
+        elif cutoff_mode['flag'] == 3:
+            angle = np.min([pos_mat_vlbi[j][4], cutoff_mode['CutAngle']])
+            for _ in np.arange(0, 360):
+                vlbi_loc_horiz.append(angle)
+        # 2. 获得该站的可观测性结果并记录
+        visibility = obs_judge_active_vlbi_station(ra_src, dec_src, time_mjd, long_vlbi, lat_vlbi, vlbi_loc_horiz)
+        vlbi_visibility_result[2 * j + 1] = visibility
+    return vlbi_visibility_result
+
+
 def obs_judge_active_satellite(time_mjd, pos_vec_sat, pos_vec_telemetry, ra_src, dec_src, cutoff_dict):
     """
     当前用的遥测站和卫星能否观测到源

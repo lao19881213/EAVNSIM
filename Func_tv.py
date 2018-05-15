@@ -58,7 +58,7 @@ def test_ae_el():
     time_step = tt.time_2_day(lc.TimeStepGlobalDay, lc.TimeStepGlobalHour, lc.TimeStepGlobalMinute,
                               lc.TimeStepGlobalSecond)
     # invoke the AZ-EL calculation functions
-    azimuth, elevation, hour_lst = func_tv_az_el(start_time, stop_time, time_step, lc.SouGllst[0], lc.VLBGllst)
+    azimuth, elevation, hour_lst = func_tv_az_el(start_time, stop_time, time_step, lc.pos_mat_src[0], lc.pos_mat_vlbi)
 
     # plot it
     for i in np.arange(0, len(azimuth)):
