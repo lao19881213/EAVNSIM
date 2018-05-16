@@ -58,14 +58,14 @@ baseline_type = baseline_flag_gg | baseline_flag_gs | baseline_flag_ss
 # 001(1)->select GtoG 010(2)->SELECT GtoS, 100(4)->StoS
 
 # 观测频率和带宽
-obs_freq = 5e9
+obs_freq = 43e9
 bandwidth = 3.2e7
 
 # 单位选择标志
 unit_flag = 1
 
 # cutoff_mode=1 #截止模式选择
-cutoff_mode = {'flag': 0, 'CutAngle': 10}  # 截止模式选择，flag:0->取数据库中设置的水平角，1->取界面上设置的水平角 2->取大者，3->取小者
+cutoff_mode = {'flag': 0, 'CutAngle': 30}  # 截止模式选择，flag:0->取数据库中设置的水平角，1->取界面上设置的水平角 2->取大者，3->取小者
 precession_mode = {'flag': 0}  # 进动模型选择，0->Two-Body,1->J2
 
 ###########################################
@@ -75,6 +75,9 @@ precession_mode = {'flag': 0}  # 进动模型选择，0->Two-Body,1->J2
 pos_mat_src = [['0134+329', 0.42624576, 0.57874696]]
 # VLBI站信息
 pos_mat_vlbi = [['Effelsberg', 4033.94775, 486.99037, 4900.430, 20],
+                ['Jodrell Bank(Lovell)', 3822.6264970, -154.1055889, 5086.4862618, 20],
+                ]
+pos_mat_vlbl = [['Effelsberg', 4033.94775, 486.99037, 4900.430, 20],
                 ['Jodrell Bank(Lovell)', 3822.6264970, -154.1055889, 5086.4862618, 20],
                 ['Green Bank', 882.87995, -4924.48234, 2944.13065, 20],
                 ['Shanghai', -2831.6869201, 4675.7336809, 3275.3276821, 20]
