@@ -30,15 +30,14 @@ def func_uv(start_mjd, stop_mjd, time_step, pos_src, pos_mat_sat, pos_mat_vlbi, 
 
     # source info (src_ra, src_dec)
     if type(pos_src[1]) == str:
-        src_ra = tt.time_2_rad(pos_src[1])
-        src_ra = tu.rad_2_angle(src_ra)
+        src_ra = tt.time_str_2_rad(pos_src[1])
     else:
-        src_ra = tu.rad_2_angle(pos_src[1])
+        src_ra = pos_src[1]
 
     if type(pos_src[2]) == str:
-        src_dec = tu.rad_2_angle(tu.angle_2_rad(pos_src[2]))
+        src_dec = tu.angle_str_2_rad(pos_src[2])
     else:
-        src_dec = tu.rad_2_angle(pos_src[2])
+        src_dec = pos_src[2]
 
     # observation info (obs_wlen, max_baseline, max_range)
     obs_wlen = tu.freq_2_wavelength(obs_freq)
@@ -55,9 +54,9 @@ def func_uv(start_mjd, stop_mjd, time_step, pos_src, pos_mat_sat, pos_mat_vlbi, 
     dict_bl_duration = {"gg": None, "gs": None, "ss": None}
 
     # according to the baseline type, calculate the corresponding uv coverage
-    print("#" * 10)
-    print(lc.baseline_type)
-    print("#" * 10)
+    # print("#" * 10)
+    # print(lc.baseline_type)
+    # print("#" * 10)
     if (baseline_type & 1) != 0:  # ground to ground
         lst_u, lst_v, bl_sta1_name, bl_sta2_name, bl_duration \
             = func_uv_gg(start_mjd, stop_mjd, time_step, src_ra, src_dec,
@@ -122,8 +121,7 @@ def func_uv_ss(start_mjd, stop_mjd, time_step, src_ra, src_dec, pos_mat_sat, pos
 def get_uv_coordination(mat_uv, pos_sta1, pos_sta2, obs_wlen, flag_unit):
     d = np.array(pos_sta1) - np.array(pos_sta2)
     dtran = np.array([d])
-    dtran = dtran.T
-    uvc = np.dot(mat_uv, dtran)
+    uvc = np.dot(mat_uv, dtran.T)
     if flag_unit == 0:
         return uvc[0][0] * 1000 / obs_wlen, uvc[1][0] * 1000 / obs_wlen, uvc[2][
             0] * 1000 / obs_wlen
@@ -198,8 +196,8 @@ def test_single_uv():
         if x is not None and y is not None:
             x = np.array(x)
             y = np.array(y)
-            plt.scatter(x, y, s=5, marker='.')
-            # plt.scatter(-x, -y, s=5, marker='.')
+            plt.scatter(x, y, s=5, marker='.', color='b')
+            plt.scatter(-x, -y, s=5, marker='.', color='b')
             max_u = np.max(list(np.abs(x)))
             max_v = np.max(list(np.abs(y)))
 
@@ -221,7 +219,7 @@ def test_single_uv():
             x = np.array(x)
             y = np.array(y)
             plt.scatter(x, y)
-            plt.scatter(-x, -y)
+            # plt.scatter(-x, -y)
             max_u = np.max(list(np.abs(x)))
             max_v = np.max(list(np.abs(y)))
 
