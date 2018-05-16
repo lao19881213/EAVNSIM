@@ -227,7 +227,7 @@ def obs_judge_active_vlbi_station(ra_src, dec_src, time_mjd, long_vlbi_sta, lat_
     azimuth_deg = tu.rad_2_angle(source_azimuth)
     elevation_deg = tu.rad_2_angle(source_elevation)
     # 将AzimuthDeg限定在0到360之间
-    azimuth_deg = azimuth_deg - int(azimuth_deg / 360) * 360
+    azimuth_deg = azimuth_deg - azimuth_deg // 360 * 360
     # 计算这个方向上能看到源的最小高度值
     azimuth_deg1 = int(azimuth_deg)
     if azimuth_deg1 == 359:
@@ -238,7 +238,7 @@ def obs_judge_active_vlbi_station(ra_src, dec_src, time_mjd, long_vlbi_sta, lat_
     elevation2 = horizon_vlbi_sta[azimuth_deg2]
     min_elevation = elevation1 + (azimuth_deg - azimuth_deg1) * (
             elevation2 - elevation1)  # 斜率k=(elevation2-elevation1)/(AzimuthDeg2-azimuth_deg1)
-
+    # print(" elevation_deg: %f, min_elevation, %f" % (elevation_deg, min_elevation))
     if elevation_deg > min_elevation:  # =(min_elevation-elevation1)/(azimuth_deg-azimuth_deg1)
         visibility = True
     else:
