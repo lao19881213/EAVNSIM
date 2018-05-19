@@ -80,9 +80,80 @@ def test_ae_el():
         plt.xlabel("Time(h)")
         plt.ylabel("Elevation($^\circ$)")
         plt.title("The elevation of source in VLBI stations")
-    plt.show()
+    # plt.show()
+
+
+def func_sky_survey(start_mjd, pos_mat_vlbi, pos_mat_sat):
+    # 统计个数的数组
+    num_array = []
+    # 水平角设置
+    vb = np.ones((1, 360), dtype=int)
+    vb *= 15
+    vb = vb[0].tolist()
+    # calculate the position of sun and moon
+    sun_ra, sun_dec = me.sun_ra_dec_cal(start_mjd, start_mjd, 1)
+    moon_ra, moon_dec = me.moon_ra_dec_cal(start_mjd, start_mjd, 1)
+
+    # survey the whole sky
+    ra_list = np.arange(0.125, 24, 0.25)
+    dec_list = np.arange(-88.75, 90, 2.5)
+    for src_dec in dec_list:
+        src_dec = tu.angle_2_rad(src_dec, 0, 0)
+        for src_ra in ra_list:
+            src_ra = tt.time_2_rad(src_ra, 0, 0)
+            num1 = 0  # sta和vlbi能观测到source的计数
+            # test vlbi station
+            for i in pos_mat_vlbi:  # get vlbi station
+                longitude, latitude, height = tc.itrf_2_geographic(i[1], i[2], i[3])
+                visibility = mo.obs_judge_active_vlbi_station(src_ra, src_dec, start_mjd, longitude, latitude, vb)
+                if visibility:
+                    num1 = num1 + 1
+            # test satellite
+            # for j in pos_mat_sat:
+            #     SatX, SatY, SatZ, VSatX, VSatY, VSatZ = ms.kepler_2_cartesian(j[1], j[2], j[3], j[4], j[5], j[6])
+            #     visibility = mo.obs_satellite_to_source(src_ra, SouDEC, start_mjd, SatX, SatY, SatZ)
+            #     if visibility:
+            #         num1 = num1 + 1
+            num_array.append(num1)
+
+    num_array = np.array(num_array)
+    num_array.shape = len(dec_list), len(ra_list)
+
+    return (sun_ra, sun_dec), (moon_ra, moon_dec), num_array  # 太阳赤经，赤纬，月球赤经赤纬，可见望远镜数
+
+
+def test_sky_survey():
+    start_time = tt.time_2_mjd(lc.StartTimeGlobalYear, lc.StartTimeGlobalMonth,
+                               lc.StartTimeGlobalDay, lc.StartTimeGlobalHour,
+                               lc.StartTimeGlobalMinute, lc.StartTimeGlobalSecond, 0)
+    pos_sun, pos_moon, num_array = func_sky_survey(start_time, lc.pos_mat_vlbi, lc.pos_mat_sat)
+    # 图像是，[0, 96], [0,72], 需要转化坐标
+    print(pos_moon, pos_sun)
+    img_sun_ra = pos_sun[0][0] * (96/24)
+    img_moon_ra = pos_moon[0][0] * (96 / 24)
+    img_sun_dec = pos_sun[1][0] * 0.4 + 36
+    img_moon_dec = pos_moon[1][0] * 0.4 + 36
+    # draw soon, moon
+    plt.plot(img_sun_ra, img_sun_dec, color='red', marker='o', markerfacecolor=(1, 0, 0), alpha=1, markersize=20)
+    plt.plot(img_moon_ra, img_moon_dec, color='blue', marker='o', markerfacecolor='w', alpha=1, markersize=10)
+    # draw survey
+    array_max = np.max(num_array)
+    bounds = np.arange(0, array_max + 1, 1)
+    ax = plt.pcolor(num_array, edgecolors=(0.5, 0.5, 0.5), linewidths=1)
+    plt.colorbar(ax, ticks=bounds, shrink=1)
+    plt.yticks([0, 24, 36, 48, 72], [-90, -30, 0, 30, 90])
+    plt.xticks([0, 16, 32, 48, 64, 80, 96], [0, 4, 8, 12, 16, 20, 24])
+    plt.plot([48, 48], [0, 72], color='black', linewidth=0.8, linestyle='-.', alpha=0.4)
+    plt.plot([0, 96], [36, 36], color='black', linewidth=0.8, linestyle='-.', alpha=0.4)
+    plt.xlabel("RA(H)")
+    plt.ylabel(r'Dec ($^\circ$)')
+    plt.title("SKY SURVEY")
+    # plt.show()
 
 
 if __name__ == "__main__":
-    # test az-el
+    plt.figure(num=1)
     test_ae_el()
+    plt.figure(num=2)
+    test_sky_survey()
+    plt.show()
