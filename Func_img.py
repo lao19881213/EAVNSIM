@@ -12,11 +12,15 @@ import matplotlib.pyplot as plt
 import matplotlib.cm as cm
 import scipy.ndimage.interpolation as spndint
 import numpy as np
+import load_conf as lc
+import trans_time as tt
+import Func_uv as fuv
 
 
+# 1. source model
 def test_source_model():
     # basic setting
-    n_H = 200
+    # n_H = 200
     n_pix = 512
     source_model = 'Faceon-Galaxy.model'
     # open the model file
@@ -34,7 +38,6 @@ def plot_model(Npix, model_file):
         return False
     else:
         Np4 = Npix // 4
-        Nphf = Npix // 2
         gamma = 0.5
         modelim = model_prepared[1]
 
@@ -137,7 +140,7 @@ def read_model(model_file):
         Xaxmax = img_size/2.
         return True, models, img_size, Xaxmax, img_file
 
-    if len(model_file)>0:
+    if len(model_file) > 0:
         if not os.path.exists(model_file):
             print("\n\nModel file %s does not exist!\n\n" % model_file)
             return False
@@ -169,8 +172,6 @@ def read_model(model_file):
                         print("\n\nWRONG SYNTAX IN LINE %i:\n\n %s...\n\n" % (li + 1, l[:max(10, len(l))]))
             if len(temp_model) + len(temp_img_files) == 0:
                 print("\n\nThere should be at least 1 model component!\n\n")
-            models = temp_model
-            img_file = temp_img_files
             if not fix_size:
                 temp_img_size = Xmax * 1.1
             temp_XaxMax = temp_img_size / 2
@@ -180,13 +181,137 @@ def read_model(model_file):
     return False
 
 
+# 2. dirty beam
 def test_dirty_beam():
-    pass
+    start_time = tt.time_2_mjd(lc.StartTimeGlobalYear, lc.StartTimeGlobalMonth,
+                               lc.StartTimeGlobalDay, lc.StartTimeGlobalHour,
+                               lc.StartTimeGlobalMinute, lc.StartTimeGlobalSecond, 0)
+    stop_time = tt.time_2_mjd(lc.StopTimeGlobalYear, lc.StopTimeGlobalMonth,
+                              lc.StopTimeGlobalDay, lc.StopTimeGlobalHour,
+                              lc.StopTimeGlobalMinute, lc.StopTimeGlobalSecond, 0)
+    time_step = tt.time_2_day(lc.TimeStepGlobalDay, lc.TimeStepGlobalHour, lc.TimeStepGlobalMinute,
+                              lc.TimeStepGlobalSecond)
+
+    dict_u, dict_v, dict_bl_sta1, dict_bl_sta2, dict_bl_duration \
+        = fuv.func_uv(start_time, stop_time, time_step, lc.pos_mat_src[0], lc.pos_mat_sat, lc.pos_mat_vlbi,
+                      lc.pos_mat_telemetry, lc.obs_freq, lc.baseline_type, lc.unit_flag, lc.cutoff_mode, lc.precession_mode)
+    temp_u = []
+    for each in dict_u.values():
+        if each is not None:
+            temp_u.extend(each)
+    temp_v = []
+    for each in dict_v.values():
+        if each is not None:
+            temp_v.extend(each)
+    n_pix = 512
+    plt.figure(num=2)
+    max_u = max(max(temp_u), max(temp_v))
+    plot_dirty_beam(n_pix, temp_u, temp_v, max_u)
+    plt.show()
 
 
-def test_dirty_map():
-    pass
+def plot_dirty_beam(Npix, u, v, max_u):
+    Np4 = Npix // 4
+    beam_prepared = prepare_beam(Npix, u, v, max_u)
+    mask = beam_prepared[0]
+    beam = beam_prepared[1]
+    beamScale = beam_prepared[2]
+
+    # beamPlotPlot = plt.imshow(beam[Np4:Npix-Np4, Np4:Npix-Np4], picker=True, interpolation='nearest')
+    beamPlotPlot = plt.imshow(beam[Np4:Npix - Np4, Np4:Npix - Np4], picker=True)
+
+    plt.setp(beamPlotPlot)
+    plt.xlabel('RA offset (as)')
+    plt.ylabel('Dec offset (as)')
+    plt.title('DIRTY BEAM')
+
+    return mask, beamScale
+
+
+def prepare_beam(Npix, u, v, max_u):
+    mask = np.zeros((Npix, Npix), dtype=np.float32)
+    beam = np.zeros((Npix, Npix), dtype=np.float32)
+
+    # 1. griding uv
+    ctr = Npix // 2 + 1
+    scale_uv = Npix / 2 / max_u * 0.95 * 0.5
+    for index in range(0, len(u)):
+        mask[int(ctr + round(u[index] * scale_uv)), int(ctr + round(v[index] * scale_uv))] += 1
+    mask = np.transpose(mask)
+
+    # 2. robust sampling
+    # robust = 0.0
+    # Nbas = len(u)
+    # nH = 200 # time_duration // time_step
+    # robfac = (5. * 10. ** (-robust)) ** 2. * (2. * Nbas * nH) / np.sum( mask** 2.)
+    # robustsamp = np.zeros((Npix, Npix), dtype=np.float32)
+    # robustsamp[:] = mask / (1. + robfac * mask)
+
+    # 3. beam
+    beam[:] = np.fft.ifftshift(np.fft.ifft2(np.fft.fftshift(mask))).real
+    Nphf = Npix//2
+    beamScale = np.max(beam[Nphf:Nphf + 1, Nphf:Nphf + 1])
+    beam[:] /= beamScale
+
+    return mask, beam, beamScale
+
+
+# 3. test all
+def test_src_beam_map():
+    n_pix = 512
+    # 1. source model
+    source_model = 'Faceon-Galaxy.model'
+    # open the model file
+    model_dir = os.path.join(os.getcwd(), 'SOURCE_MODELS')
+    model_file = os.path.join(model_dir, source_model)
+    # plot beam
+    plt.figure(num=1)
+    model_plotted = plot_model(n_pix, model_file)
+    model_fft = model_plotted[2]
+
+    # 2. beam
+    start_time = tt.time_2_mjd(lc.StartTimeGlobalYear, lc.StartTimeGlobalMonth,
+                               lc.StartTimeGlobalDay, lc.StartTimeGlobalHour,
+                               lc.StartTimeGlobalMinute, lc.StartTimeGlobalSecond, 0)
+    stop_time = tt.time_2_mjd(lc.StopTimeGlobalYear, lc.StopTimeGlobalMonth,
+                              lc.StopTimeGlobalDay, lc.StopTimeGlobalHour,
+                              lc.StopTimeGlobalMinute, lc.StopTimeGlobalSecond, 0)
+    time_step = tt.time_2_day(lc.TimeStepGlobalDay, lc.TimeStepGlobalHour, lc.TimeStepGlobalMinute,
+                              lc.TimeStepGlobalSecond)
+
+    dict_u, dict_v, dict_bl_sta1, dict_bl_sta2, dict_bl_duration \
+        = fuv.func_uv(start_time, stop_time, time_step, lc.pos_mat_src[0], lc.pos_mat_sat, lc.pos_mat_vlbi,
+                      lc.pos_mat_telemetry, lc.obs_freq, lc.baseline_type, lc.unit_flag, lc.cutoff_mode,
+                      lc.precession_mode)
+    temp_u = []
+    for each in dict_u.values():
+        if each is not None:
+            temp_u.extend(each)
+    temp_v = []
+    for each in dict_v.values():
+        if each is not None:
+            temp_v.extend(each)
+    # plot beam
+    plt.figure(num=2)
+    max_u = max(max(temp_u), max(temp_v))
+    beam_plotted = plot_dirty_beam(n_pix, temp_u, temp_v, max_u)
+    mask = beam_plotted[0]
+    beam_scale = beam_plotted[1]
+    # 3. dirty map
+    dirty_map = np.zeros((n_pix, n_pix), dtype=np.float32)
+    dirty_map[:] = np.fft.fftshift(np.fft.ifft2(model_fft * np.fft.ifftshift(mask))).real / beam_scale
+    Np4 = n_pix // 4
+    plt.figure(num=3)
+    dirty_plot = plt.imshow(dirty_map[Np4:n_pix - Np4, Np4:n_pix - Np4], picker=True)
+    plt.setp(dirty_plot)
+    plt.xlabel('RA offset (as)')
+    plt.ylabel('Dec offset (as)')
+    plt.title('DIRTY IMAGE')
+
+    plt.show()
 
 
 if __name__ == "__main__":
-    test_source_model()
+    # test_source_model()
+    # test_dirty_beam()
+    test_src_beam_map()
