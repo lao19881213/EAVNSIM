@@ -225,7 +225,7 @@ def plot_dirty_beam(Npix, u, v, max_u):
     plt.ylabel('Dec offset (as)')
     plt.title('DIRTY BEAM')
 
-    return mask, beamScale
+    return beam, mask, beamScale
 
 
 def prepare_beam(Npix, u, v, max_u):
@@ -295,8 +295,9 @@ def test_src_beam_map():
     plt.figure(num=2)
     max_u = max(max(temp_u), max(temp_v))
     beam_plotted = plot_dirty_beam(n_pix, temp_u, temp_v, max_u)
-    mask = beam_plotted[0]
-    beam_scale = beam_plotted[1]
+    dirty_beam = beam_plotted[0]
+    mask = beam_plotted[1]
+    beam_scale = beam_plotted[2]
     # 3. dirty map
     dirty_map = np.zeros((n_pix, n_pix), dtype=np.float32)
     dirty_map[:] = np.fft.fftshift(np.fft.ifft2(model_fft * np.fft.ifftshift(mask))).real / beam_scale
@@ -308,7 +309,70 @@ def test_src_beam_map():
     plt.ylabel('Dec offset (as)')
     plt.title('DIRTY IMAGE')
 
+    # cleaner
+    clean_img, res_img = do_clean(dirty_map, dirty_beam, True, 0.2, 0, 50)
+    plt.figure(num=4)
+    # 4.residual image
+    residual_plot = plt.imshow(res_img[Np4:n_pix - Np4, Np4:n_pix - Np4], interpolation='nearest', picker=True)
+    plt.setp(residual_plot)
+    plt.xlabel('RA offset (as)')
+    plt.ylabel('Dec offset (as)')
+    plt.title('RESIDUAL')
+
+    # clean image
+    plt.figure(num=5)
+    clean_plot = plt.imshow(clean_img[Np4:n_pix - Np4, Np4:n_pix - Np4], picker=True)
+    plt.setp(clean_plot)
+    plt.xlabel('RA offset (as)')
+    plt.ylabel('Dec offset (as)')
+    plt.title('CLEAN IMAGE')
     plt.show()
+
+
+# 4. cleaner
+def do_clean(dirty, psf, window, gain, thresh, niter):
+    clean_img = np.zeros(dirty.shape)
+    res_img = np.array(dirty)
+    if window is True:
+        window = np.ones(dirty.shape, np.bool)
+    for i in range(niter):
+        mx, my = np.unravel_index(np.fabs(res_img[window]).argmax(), res_img.shape)
+        mval = res_img[mx, my] * gain
+        clean_img[mx, my] += mval
+        a1o, a2o = overlap_indices(dirty, psf,
+                                   mx - dirty.shape[0] / 2,
+                                   my - dirty.shape[1] / 2)
+        # print(a1o, a2o)
+        res_img[a1o[0]:a1o[1], a1o[2]:a1o[3]] -= psf[a2o[0]:a2o[1], a2o[2]:a2o[3]] * mval
+        if np.fabs(res_img).max() < thresh:
+            break
+    return clean_img, res_img
+
+
+def overlap_indices(a1, a2, shiftx, shifty):
+    if shiftx >=0:
+        a1xbeg=shiftx
+        a2xbeg=0
+        a1xend=a1.shape[0]
+        a2xend=a1.shape[0]-shiftx
+    else:
+        a1xbeg=0
+        a2xbeg=-shiftx
+        a1xend=a1.shape[0]+shiftx
+        a2xend=a1.shape[0]
+
+    if shifty >=0:
+        a1ybeg=shifty
+        a2ybeg=0
+        a1yend=a1.shape[1]
+        a2yend=a1.shape[1]-shifty
+    else:
+        a1ybeg=0
+        a2ybeg=-shifty
+        a1yend=a1.shape[1]+shifty
+        a2yend=a1.shape[1]
+
+    return (int(a1xbeg), int(a1xend), int(a1ybeg), int(a1yend)), (int(a2xbeg), int(a2xend), int(a2ybeg), int(a2yend))
 
 
 if __name__ == "__main__":
