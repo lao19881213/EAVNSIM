@@ -15,7 +15,6 @@ eccentricity_square = earth_flattening * (2 - earth_flattening)
 # GM constant     # GM=3.986004418*1e14    #地球（包括大气）引力常数  单位为m^3/s^-2 折合3.986004418*1e5
 GM = 3.986004418 * 1e5  # [km^3/s^-2]
 
-
 ###########################################
 # 1. 观测时间的设置
 ###########################################
@@ -94,22 +93,11 @@ pos_mat_sat = [['VSOP', 17367.457, 0.60150, 31.460, 106.755, 16.044, 66.210, 508
 ###########################################
 
 # 数据库中的表
-# Soutable = 0
-# Teletable = []
-# Satetable = []
-# VLStable = [1]
-
-# 与数据库相关的变量
-# hostname="localhost"
-# username="root"
-# password=""
-# dbname="astro"
-
-# 数据库表数据路径的装载
-# SourceFilePath = "Database/source.txt"
-# VLBIStationFilePath = "Database/VLBIStation.txt"
-# SatelliteFilePath = "Database/satellite.txt"
-# TrackStationFilePath = "Database/trackstation.txt"
+# db_file = "data.db"
+# db_lst_src = []
+# db_lst_vlbi = []
+# db_lst_sat = []
+# db_lst_tele = [1]
 
 
 def print_setting():
