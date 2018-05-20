@@ -1,3 +1,9 @@
+"""
+@functions: parameter calculation
+@author: Zhen ZHAO
+@date: May 20, 2018
+"""
+
 import tkinter as tk
 from tkinter import ttk
 from tkinter import messagebox
@@ -57,7 +63,7 @@ def center_window(root, width, height):
 
 window = tk.Tk()
 window.resizable(False, False)
-window.title("EVN Calculator")
+window.title("Parameter Calculator")
 center_window(window, 600, 500)
 
 # 2. framework #flat, groove, raised, ridge, solid, or sunken
