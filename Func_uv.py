@@ -16,6 +16,58 @@ import matplotlib as mpl
 import matplotlib.pyplot as plt
 
 
+def func_all_year_uv(start_mjd, time_step, pos_src, pos_mat_sat, pos_mat_vlbi, pos_mat_telemetry,
+                     obs_freq, baseline_type, flag_unit, cutoff_mode, precession_mode):
+    # result storing
+    result_time_u = []
+    result_time_v = []
+
+    # generated 12 all year time, and calculate u,v
+    date = tt.mjd_2_time(start_mjd)
+    year = date[1]
+    month = date[2]
+    # print("year", year, "month", month)
+    for _ in range(0, 12):
+        # generate time
+        if month > 13:
+            year += 1
+            month -= 12
+            temp_start = tt.time_2_mjd(year, month, 1, 0, 0, 0, 0)
+            temp_end = tt.time_2_mjd(year, month, 2, 0, 0, 0, 0)
+        else:
+            temp_start = tt.time_2_mjd(year, month, 1, 0, 0, 0, 0)
+            temp_end = tt.time_2_mjd(year, month, 2, 0, 0, 0, 0)
+        month += 1
+        # print("temp_start", temp_start, "temp_end", temp_end)
+        # invoke u,v
+        dict_u, dict_v, dict_bl_sta1, dict_bl_sta2, dict_bl_duration \
+            = func_uv(temp_start, temp_end, time_step, pos_src, pos_mat_sat, pos_mat_vlbi,
+                      pos_mat_telemetry, obs_freq, baseline_type, flag_unit, cutoff_mode, precession_mode)
+        # print("dict_u=", dict_u)
+        # record u,v
+        temp_u = []
+        for each in dict_u.values():
+            if each is not None:
+                temp_u.extend(each)
+        temp_v = []
+        for each in dict_v.values():
+            if each is not None:
+                temp_v.extend(each)
+        result_time_u.append(temp_u)
+        result_time_v.append(temp_v)
+    # calculate max {u,v}
+    max_range = 1
+    for k in range(0, len(result_time_u)):
+        if len(result_time_u[k]) > 0 and len(result_time_v[k]) > 0:
+            temp1 = np.max(np.abs(result_time_u[k]))
+            temp2 = np.max(np.abs(result_time_v[k]))
+            temp = max(temp1, temp2)
+            if max_range < temp:
+                max_range = temp
+    # return
+    return result_time_u, result_time_v, max_range * 1.3
+
+
 def func_all_sky_uv(start_mjd, stop_mjd, time_step, pos_mat_sat, pos_mat_vlbi,
                     pos_mat_telemetry, obs_freq, baseline_type, flag_unit, cutoff_mode, precession_mode):
     # dict_mat_u = {"gg": None, "gs": None, "ss": None}
@@ -44,7 +96,17 @@ def func_all_sky_uv(start_mjd, stop_mjd, time_step, pos_mat_sat, pos_mat_vlbi,
             #     result_mat_v.append(temp_v)
             result_mat_u.append(temp_u)
             result_mat_v.append(temp_v)
-    return result_mat_u, result_mat_v
+
+    max_range = 1
+    for k in range(0, len(result_mat_u)):
+        if len(result_mat_u[k]) > 0 and len(result_mat_v[k]) > 0:
+            temp1 = np.max(np.abs(result_mat_u[k]))
+            temp2 = np.max(np.abs(result_mat_v[k]))
+            temp = max(temp1, temp2)
+            if max_range < temp:
+                max_range = temp
+
+    return result_mat_u, result_mat_v, max_range
 
 
 def func_uv(start_mjd, stop_mjd, time_step, pos_src, pos_mat_sat, pos_mat_vlbi, pos_mat_telemetry,
@@ -261,7 +323,6 @@ def test_single_uv():
     plt.grid()
 
 
-
 def test_sky_uv():
     # load data from configurations
     start_time = tt.time_2_mjd(lc.StartTimeGlobalYear, lc.StartTimeGlobalMonth,
@@ -272,25 +333,16 @@ def test_sky_uv():
                               lc.StopTimeGlobalMinute, lc.StopTimeGlobalSecond, 0)
     time_step = tt.time_2_day(lc.TimeStepGlobalDay, lc.TimeStepGlobalHour, lc.TimeStepGlobalMinute,
                               lc.TimeStepGlobalSecond)
-    result_mat_u, result_mat_v = func_all_sky_uv(start_time, stop_time, time_step, lc.pos_mat_sat, lc.pos_mat_vlbi,
-                                                 lc.pos_mat_telemetry, lc.obs_freq, lc.baseline_type, lc.unit_flag,
-                                                 lc.cutoff_mode, lc.precession_mode)
+    result_mat_u, result_mat_v, max_range = func_all_sky_uv(start_time, stop_time, time_step, lc.pos_mat_sat,
+                                                            lc.pos_mat_vlbi, lc.pos_mat_telemetry, lc.obs_freq,
+                                                            lc.baseline_type, lc.unit_flag, lc.cutoff_mode,
+                                                            lc.precession_mode)
     # correctly obtained results
     if len(result_mat_u) == 0 or len(result_mat_v) == 0:
         return
     # print("u:", result_mat_u[0:10], "\nv:", result_mat_v[0:10])
-    # normalization
-    max_range = 1
-    for k in range(0, len(result_mat_u)):
-        if len(result_mat_u[k]) > 0 and len(result_mat_v[k]) >0:
-            temp1 = np.max(np.abs(result_mat_u[k]))
-            temp2 = np.max(np.abs(result_mat_v[k]))
-            temp = max(temp1, temp2)
-            if max_range < temp:
-                max_range = temp
-
     k = 0
-    print(len(result_mat_u))
+    # print(len(result_mat_u))
     for i in (2, 6, 10, 14, 18, 22):
         for j in (-60, -30, 0, 30, 60):
             if len(result_mat_u[k]) > 0 and len(result_mat_v[k]) > 0:
@@ -298,7 +350,7 @@ def test_sky_uv():
                 temp_v = np.array(result_mat_v[k]) / max_range * 10
                 temp_u += i
                 temp_v += j
-                plt.scatter(temp_u, temp_v, s=5, marker='.', color='b')
+                plt.scatter(temp_u, temp_v, s=3, marker='.', color='b')
             k += 1
     # plot sun position
     sun_ra, sun_dec = me.sun_ra_dec_cal(start_time, stop_time, time_step)
@@ -315,9 +367,48 @@ def test_sky_uv():
     plt.grid()
 
 
+def test_time_uv():
+    # load data from configurations
+    start_time = tt.time_2_mjd(lc.StartTimeGlobalYear, lc.StartTimeGlobalMonth,
+                               lc.StartTimeGlobalDay, lc.StartTimeGlobalHour,
+                               lc.StartTimeGlobalMinute, lc.StartTimeGlobalSecond, 0)
+    time_step = tt.time_2_day(lc.TimeStepGlobalDay, lc.TimeStepGlobalHour, lc.TimeStepGlobalMinute,
+                              lc.TimeStepGlobalSecond)
+
+    result_time_u, result_time_v, max_range = func_all_year_uv(start_time, time_step, lc.pos_mat_src[0], lc.pos_mat_sat,
+                                                               lc.pos_mat_vlbi, lc.pos_mat_telemetry, lc.obs_freq,
+                                                               lc.baseline_type, lc.unit_flag, lc.cutoff_mode,
+                                                               lc.precession_mode)
+    print(result_time_u, result_time_v, max_range)
+    # correctly obtained results
+    if len(result_time_u) == 0 or len(result_time_v) == 0:
+        return
+    # 横着有3个是6分, 纵轴有4个是8分, 所以取最小公倍数, 24
+    k = 0
+    for irow in (21, 15, 9, 3): # 24份对应的画点的位置
+        for icol in (20, 12, 4):
+            if len(result_time_u[k]) > 0 and len(result_time_v[k]) > 0:
+                temp_u = result_time_u[k] / max_range * 4
+                temp_v = result_time_v[k] / max_range * 3
+                temp_u += icol
+                temp_v += irow
+                plt.scatter(temp_u, temp_v, s=3, marker='.', color='b')
+            k += 1
+    plt.title("All Year Round UV Plot")
+    plt.xlim(0, 24)
+    plt.ylim(0, 24)
+    plt.xticks([4, 12, 20], [1, 2, 3])
+    plt.yticks([3, 9, 15, 21], [4, 3, 2, 1])
+    plt.xlabel(r"$i_{th}$\ month")
+    plt.ylabel(r"Quarter")
+    plt.grid()
+
+
 if __name__ == "__main__":
     plt.figure(num=1)
     test_single_uv()
     plt.figure(num=2)
     test_sky_uv()
+    plt.figure(num=3)
+    test_time_uv()
     plt.show()
