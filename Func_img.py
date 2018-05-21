@@ -52,8 +52,8 @@ def plot_model(Npix, model_file):
         # plt.text(0.05, 0.87, fmtM % (modflux, 0.0, 0.0),
         #                      bbox=dict(facecolor='white', alpha=0.7))
         plt.setp(modelPlotPlot, extent=(Xaxmax / 2., -Xaxmax / 2., -Xaxmax / 2., Xaxmax / 2.))
-        plt.xlabel('Dec offset (as)')
-        plt.ylabel('Dec offset (as)')
+        plt.xlabel('RA offset')
+        plt.ylabel('DEC offset')
         plt.title('MODEL IMAGE')
         return True, modelim, modelfft, Xaxmax
 
@@ -221,8 +221,8 @@ def plot_dirty_beam(Npix, u, v, max_u):
     beamPlotPlot = plt.imshow(beam[Np4:Npix - Np4, Np4:Npix - Np4], picker=True)
 
     plt.setp(beamPlotPlot)
-    plt.xlabel('RA offset (as)')
-    plt.ylabel('Dec offset (as)')
+    plt.xlabel('RA offset')
+    plt.ylabel('Dec offset')
     plt.title('DIRTY BEAM')
 
     return beam, mask, beamScale
@@ -260,7 +260,7 @@ def prepare_beam(Npix, u, v, max_u):
 def test_src_beam_map():
     n_pix = 512
     # 1. source model
-    source_model = 'Faceon-Galaxy.model'
+    source_model = 'point.model'
     # open the model file
     model_dir = os.path.join(os.getcwd(), 'SOURCE_MODELS')
     model_file = os.path.join(model_dir, source_model)
@@ -305,26 +305,26 @@ def test_src_beam_map():
     plt.figure(num=3)
     dirty_plot = plt.imshow(dirty_map[Np4:n_pix - Np4, Np4:n_pix - Np4], picker=True)
     plt.setp(dirty_plot)
-    plt.xlabel('RA offset (as)')
-    plt.ylabel('Dec offset (as)')
+    plt.xlabel('RA offset')
+    plt.ylabel('Dec offset ')
     plt.title('DIRTY IMAGE')
 
     # cleaner
-    clean_img, res_img = do_clean(dirty_map, dirty_beam, True, 0.2, 0, 50)
+    clean_img, res_img = do_clean(dirty_map, dirty_beam, True, 0.2, 0, 100)
     plt.figure(num=4)
     # 4.residual image
     residual_plot = plt.imshow(res_img[Np4:n_pix - Np4, Np4:n_pix - Np4], interpolation='nearest', picker=True)
     plt.setp(residual_plot)
-    plt.xlabel('RA offset (as)')
-    plt.ylabel('Dec offset (as)')
+    plt.xlabel('RA offset ')
+    plt.ylabel('Dec offset')
     plt.title('RESIDUAL')
 
     # clean image
     plt.figure(num=5)
     clean_plot = plt.imshow(clean_img[Np4:n_pix - Np4, Np4:n_pix - Np4], picker=True)
     plt.setp(clean_plot)
-    plt.xlabel('RA offset (as)')
-    plt.ylabel('Dec offset (as)')
+    plt.xlabel('RA offset')
+    plt.ylabel('Dec offset')
     plt.title('CLEAN IMAGE')
     plt.show()
 
