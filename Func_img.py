@@ -375,6 +375,10 @@ def overlap_indices(a1, a2, shiftx, shifty):
     return (int(a1xbeg), int(a1xend), int(a1ybeg), int(a1yend)), (int(a2xbeg), int(a2xend), int(a2ybeg), int(a2yend))
 
 
+def test_Integrated_UI(master=None):
+    pass
+
+
 if __name__ == "__main__":
     # test_source_model()
     # test_dirty_beam()
