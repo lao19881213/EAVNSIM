@@ -37,4 +37,4 @@ IMSIZE 60.
 # AND THE DESIRED PEAK INTENSITY (IN JY/PIXEL).
 #
 
-IMAGE   Lena.png  1.0
+IMAGE   Point.png  1.0
