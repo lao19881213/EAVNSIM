@@ -151,4 +151,3 @@ def get_satellite_position(a, e, i, AOP, LOAN, M0, MJDEpoch, MJDTime, precession
     x, y, z, Vx, Vy, Vz = kepler_2_cartesian(a, e, i, AOP, LOAN, M)
     # print x,y,z
     return [a, e, i, AOP, LOAN, M, x, y, z, Vx, Vy, Vz]  # 这是ICRF坐标
-
