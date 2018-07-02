@@ -5,9 +5,7 @@
 """
 import numpy as np
 import load_conf as lc
-import trans_time as tt
-import trans_coordinate as tc
-import trans_unit as tu
+import utility as ut
 
 
 def sun_ecliptic_pos(time_jd):
@@ -261,7 +259,7 @@ def sun_effect_src(time_mjd, ra_src, dec_src):
     :param dec_src:
     :return: 是否受到影响
     """
-    epsilon = tt.ecliptic_obliquity(time_mjd)  # 计算黄赤交角
+    epsilon = ut.ecliptic_obliquity(time_mjd)  # 计算黄赤交角
     sin = np.sin
     cos = np.cos
     src_equ = np.zeros((3, 1))
@@ -269,13 +267,13 @@ def sun_effect_src(time_mjd, ra_src, dec_src):
     src_equ[1] = cos(dec_src) * sin(ra_src)
     src_equ[2] = sin(dec_src)
 
-    src_ecu = tc.equatorial_2_ecliptic(src_equ, epsilon)  # 根据源赤道单位向量计算源黄道单位向量
+    src_ecu = ut.equatorial_2_ecliptic(src_equ, epsilon)  # 根据源赤道单位向量计算源黄道单位向量
     jd_time = time_mjd + 2400000.5
     sun_lamb = sun_ecliptic_pos(jd_time)  # 根据儒略日计算太阳黄经
     sun_ecu = np.zeros((3, 1))
     sun_ecu[0] = cos(sun_lamb)
     sun_ecu[1] = sin(sun_lamb)  # 计算太阳黄道单位向量
-    sun_angle = tu.angle_btw_vec(src_ecu, sun_ecu)  # 计算源和太阳之间的夹角
+    sun_angle = ut.angle_btw_vec(src_ecu, sun_ecu)  # 计算源和太阳之间的夹角
     if sun_angle > 50/180*np.pi:
         return True     # 源可见，太阳对源观测没有影响
     else:
@@ -292,7 +290,7 @@ def earth_shadow_sun(time_mjd, pos_vec_sat, amos_flag):
     """
     cos = np.cos
     sin = np.sin
-    epsilon = tt.ecliptic_obliquity(time_mjd)  # 计算黄赤交角
+    epsilon = ut.ecliptic_obliquity(time_mjd)  # 计算黄赤交角
     # 计算卫星中心系统中地球黄道单位向量
     earth_ec = earth_ecliptic_pos(pos_vec_sat, epsilon)
     jd_time = time_mjd + 2400000.5
@@ -305,7 +303,7 @@ def earth_shadow_sun(time_mjd, pos_vec_sat, amos_flag):
     ear = np.arcsin(lc.earth_radius / r)
     # 卫星视角看太阳视半径 sun apparent rad
     sar = 0.00465421
-    angle = tu.angle_btw_vec(earth_ec, sun_ecu)  # 计算源和太阳之间的夹角
+    angle = ut.angle_btw_vec(earth_ec, sun_ecu)  # 计算源和太阳之间的夹角
     # 不考虑大气的影响
     if amos_flag == 0:
         if angle > (ear - sar):
@@ -332,20 +330,20 @@ def earth_shadow_src(time_mjd, pos_vec_sat, ra_src, dec_src, amos_flag):
     """
     cos = np.cos
     sin = np.sin
-    epsilon = tt.ecliptic_obliquity(time_mjd)  # 计算黄赤交角
+    epsilon = ut.ecliptic_obliquity(time_mjd)  # 计算黄赤交角
     # 计算卫星中心系统中地球黄道单位向量
     earth_ecu = earth_ecliptic_pos(pos_vec_sat, epsilon)
     src_equ = np.zeros((3, 1))
     src_equ[0] = cos(dec_src) * cos(ra_src)  # 根据源赤经赤纬计算源赤道向量?
     src_equ[1] = cos(dec_src) * sin(ra_src)
     src_equ[2] = sin(dec_src)
-    src_ecu = tc.equatorial_2_ecliptic(src_equ, epsilon)  # 根据源赤道单位向量计算源黄道单位向量
+    src_ecu = ut.equatorial_2_ecliptic(src_equ, epsilon)  # 根据源赤道单位向量计算源黄道单位向量
     # 卫星视角看地球视半径 Earth Apparent Rad
     r = np.sqrt(pos_vec_sat[0][0] ** 2 + pos_vec_sat[1][0] ** 2 + pos_vec_sat[2][0] ** 2)
     ear = np.arcsin(lc.earth_radius / r)  # 地球视半径
     # 卫星视角看太阳视半径 sun apparent rad
     sar = 0.00465421
-    angle = tu.angle_btw_vec(earth_ecu, src_ecu)  # 计算源和太阳之间的夹角
+    angle = ut.angle_btw_vec(earth_ecu, src_ecu)  # 计算源和太阳之间的夹角
     # 不考虑大气的影响
     if amos_flag == 0:
         if angle > (ear - sar):
