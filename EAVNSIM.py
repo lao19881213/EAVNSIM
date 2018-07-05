@@ -66,6 +66,8 @@ Enjoy it!
 """
 COPY_RIGHT_INFO = 'EAVNSIM \N{COPYRIGHT SIGN} 2018, %s' % __author__
 TITLE = 'EAVNSIM - Shanghai Astronomical Observatory - version  %s' % __version__
+
+# addtional functions
 POP_OUT_PARA_CAL = 'para'
 POP_OUY_DB_EDIT = 'database'
 
@@ -125,19 +127,13 @@ class AppData(object):
         self.init_true_cal_para_globally()
         self.update_time()
 
-        # 1. calculating class
+        # 2. calculating class
         self.myFuncUv = None
         self.myFuncObs = None
         self.myFuncImg = None
         self.myFuncRad = None
 
-        # 3. update data state
-        self.update_done_data_uv = False
-        self.update_done_data_img = False
-        self.update_done_data_obs = False
-        self.update_done_data_rad = False
-
-        # 4. all simulation result
+        # 3. all simulation result
         self.result_uv_single_u = []
         self.result_uv_single_v = []
         self.result_uv_single_max = 0.0
@@ -462,7 +458,7 @@ class AppData(object):
                     self.result_obs_survey_moon = value[1]
                     self.result_obs_survey_array = value[2]
 
-    def _update_all_first_update(self):
+    def _update_all_first_update_with_accelerate(self):
         # update all uv
         self._update_uv_with_multiprocess()
         # update obs, img, radplot
@@ -519,7 +515,7 @@ class AppData(object):
         # self.parent.gress_bar.quit()
 
         if update_flag_first_run:
-            self._update_all_first_update()
+            self._update_all_first_update_with_accelerate()
             return
 
         # update time
@@ -881,11 +877,6 @@ class AppGUI(object):
                                                   self.if_update_obs,
                                                   self.if_update_img,
                                                   self.if_update_rad)
-        # self.myData.update_all_with_flag(self.if_update_first_time,
-        #                                  self.if_update_uv,
-        #                                  self.if_update_obs,
-        #                                  self.if_update_img,
-        #                                  self.if_update_rad)
 
     def update_all_panel(self):
         # update uv coverage functions
@@ -1905,8 +1896,8 @@ class AppGUI(object):
         self.figs_uv_fig_uv_single.grid()
 
         self.figs_uv_fig_all_sky.set_title("ALL SKY UV Plots", fontdict=MY_IMG_FONT)
-        self.figs_uv_fig_all_sky.set_xlabel("Normalized u")
-        self.figs_uv_fig_all_sky.set_ylabel("Normalized v")
+        self.figs_uv_fig_all_sky.set_xlabel(r"Ra($H$)")
+        self.figs_uv_fig_all_sky.set_ylabel(r'Dec ($^\circ$)')
         self.figs_uv_fig_all_sky.set_xticks([0, 2, 6, 10, 14, 18, 22, 24])
         self.figs_uv_fig_all_sky.set_yticks([-90, -60, -30, 0, 30, 60, 90], )
         self.figs_uv_fig_all_sky.set_xlim(0, 24)
