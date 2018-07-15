@@ -1891,8 +1891,8 @@ class AppGUI(object):
             self.figs_uv_fig_uv_single.set_xlabel("u$(\lambda)$")
             self.figs_uv_fig_uv_single.set_ylabel("v$(\lambda)$")
         else:
-            self.figs_uv_fig_uv_single.set_xlabel("u$(m)$")
-            self.figs_uv_fig_uv_single.set_ylabel("v$(m)$")
+            self.figs_uv_fig_uv_single.set_xlabel("u$(km)$")
+            self.figs_uv_fig_uv_single.set_ylabel("v$(km)$")
         self.figs_uv_fig_uv_single.grid()
 
         self.figs_uv_fig_all_sky.set_title("ALL SKY UV Plots", fontdict=MY_IMG_FONT)
@@ -1926,8 +1926,8 @@ class AppGUI(object):
         self.figs_uv_fig_uv_single.grid()
 
         self.figs_uv_fig_all_sky.set_title("ALL Sky UV Plots", fontdict=MY_IMG_FONT)
-        self.figs_uv_fig_all_sky.set_xlabel("Normalized u")
-        self.figs_uv_fig_all_sky.set_ylabel("Normalized v")
+        self.figs_uv_fig_all_sky.set_xlabel(r"Ra($H$)")
+        self.figs_uv_fig_all_sky.set_ylabel(r'Dec ($^\circ$)')
         self.figs_uv_fig_all_sky.set_xticks([0, 2, 6, 10, 14, 18, 22, 24], )
         self.figs_uv_fig_all_sky.set_yticks([-90, -60, -30, 0, 30, 60, 90], )
         self.figs_uv_fig_all_sky.set_xlim(0, 24)
@@ -2012,6 +2012,9 @@ class AppGUI(object):
         self.figs_obs_fig_el.set_ylabel("Elevation($^\circ$)")
 
         self.figs_obs_fig_survey.set_title('SKY SURVEY', fontdict=MY_IMG_FONT)
+        self.figs_obs_fig_survey.set_xlabel("RA(H)")
+        self.figs_obs_fig_survey.set_ylabel(r'Dec ($^\circ$)')
+
         pl.setp(self.figs_obs_fig_el.get_xticklabels(), visible=False)
 
         if self.obs_panel_color_bar is not None:
@@ -2038,6 +2041,18 @@ class AppGUI(object):
         bounds = np.arange(0, array_max + 1, 1)
         ax = self.figs_obs_fig_survey.pcolor(num_array, edgecolors=(0.5, 0.5, 0.5), linewidths=1)
         self.obs_panel_color_bar = self.figs_obs.colorbar(ax, ticks=bounds, shrink=1)
+
+        # draw axis
+        self.figs_obs_fig_survey.plot([48, 48], [0, 72], color='black', linewidth=0.8, linestyle='-.', alpha=0.4)
+        self.figs_obs_fig_survey.plot([0, 96], [36, 36], color='black', linewidth=0.8, linestyle='-.', alpha=0.4)
+
+        # draw soon, moon
+        self.figs_obs_fig_survey.plot(pos_sun[0], pos_sun[1], color='red', marker='o', markerfacecolor=(1, 0, 0), alpha=1, markersize=20)
+        self.figs_obs_fig_survey.plot(pos_moon[0], pos_moon[1], color='blue', marker='o', markerfacecolor='w', alpha=1, markersize=10)
+
+        # set ticks
+        self.figs_obs_fig_survey.set_xticks([0, 16, 32, 48, 64, 80, 96], [0, 4, 8, 12, 16, 20, 24])
+        self.figs_obs_fig_survey.set_yticks([0, 24, 36, 48, 72], [-90, -30, 0, 30, 90])
 
         # show new
         self.canvas_obs.show()
