@@ -9,6 +9,7 @@ from tkinter import ttk
 from tkinter import messagebox
 from collections import OrderedDict
 
+_copyright_ = 'Copyright \N{COPYRIGHT SIGN} 2018, SHAO and Zhen Zhao'
 
 class ParaCal(object):
     def __init__(self, window=None):
@@ -200,7 +201,7 @@ class ParaCal(object):
         # self.debugView.pack(side='top', anchor='w')
 
         # 6. show window
-        label = tk.Label(window, text='Copyright \N{COPYRIGHT SIGN} 2017, Zsolt Paragi and SHAO', bd=1, relief='sunken',
+        label = tk.Label(window, text=_copyright_, bd=1, relief='sunken',
                          anchor='e')
         label.pack(side='bottom', fill='x')
 
@@ -465,7 +466,8 @@ class ParaCal(object):
 def center_window(root, width, height):
     screenwidth = root.winfo_screenwidth()
     screenheight = root.winfo_screenheight()
-    size = '%dx%d+%d+%d' % (width, height, (screenwidth - width) / 2, (screenheight - height) / 2 - 50)
+    position_y = max((screenheight - height) / 2 - 50, 0)
+    size = '%dx%d+%d+%d' % (width, height, (screenwidth + width//2) / 2, position_y)
     # print(size)
     root.geometry(size)
 
@@ -492,7 +494,7 @@ _band_3mm = {'Jb1': -1, 'Jb2': -1, 'Cm': -1, 'Wb': -1, 'W1': -1, 'Ef': 930, 'Mc'
 
 if __name__ == "__main__":
     my_window = tk.Tk()
-    my_window.resizable(False, False)
+    # my_window.resizable(False, False)
     my_window.title("Parameter Calculator")
 
     ParaCal(window=my_window)
