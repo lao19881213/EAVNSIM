@@ -9,6 +9,7 @@ import matplotlib.image as plimg
 import matplotlib.pyplot as plt
 import matplotlib.cm as cm
 import scipy.ndimage.interpolation as spndint
+import scipy.optimize as spfit
 import numpy as np
 import load_conf as lc
 import utility as ut
@@ -675,6 +676,7 @@ def test_src_beam_map():
 def do_clean(dirty, psf, window, gain, thresh, niter):
     clean_img = np.zeros(np.shape(dirty))
     res_img = np.copy(dirty)
+    clean_beam = get_clean_beam(psf)
     if window is True:
         window = np.ones(dirty.shape, np.bool)
     for i in range(niter):
@@ -689,6 +691,38 @@ def do_clean(dirty, psf, window, gain, thresh, niter):
         if np.fabs(res_img).max() < thresh:
             break
     return clean_img, res_img
+
+
+def get_clean_beam(beam):
+    main_lobe = np.where(beam > 0.6)
+    clean_beam = np.zeros(np.shape(beam))
+    Npix = len(beam[0])
+    print(Npix)
+
+    if len(main_lobe[0]) < 5:
+        print('ERROR!', 'The main lobe of the PSF is too narrow!\n CLEAN model will not be restored')
+        clean_beam[:] = 0.0
+        clean_beam[Npix / 2, Npix / 2] = 1.0
+    else:
+        dX = main_lobe[0] - Npix / 2
+        dY = main_lobe[1] - Npix / 2
+        #  if True:
+        try:
+            fit = spfit.leastsq(lambda x: np.exp(-(dX * dX * x[0] + dY * dY * x[1] + dX * dY * x[2])) - beam[main_lobe], [1., 1., 0.])
+            ddX = np.outer(np.ones(Npix),
+                           np.arange(-Npix / 2, Npix / 2).astype(np.float64))
+            ddY = np.outer(np.arange(-Npix / 2, Npix / 2).astype(np.float64),
+                           np.ones(Npix))
+
+            clean_beam[:] = np.exp(-(ddY * ddY * fit[0][0] + ddX * ddX * fit[0][1] + ddY * ddX * fit[0][2]))
+
+            del ddX, ddY
+        except:
+            print('ERROR!', 'Problems fitting the PSF main lobe!\n CLEAN model will not be restored')
+            clean_beam[:] = 0.0
+            clean_beam[Npix / 2, Npix / 2] = 1.0
+
+    return clean_beam
 
 
 def overlap_indices(a1, a2, shiftx, shifty):
